@@ -1,5 +1,3 @@
-"""CSV and Excel file I/O operations - consolidated from both projects."""
-
 import pandas as pd
 import logging
 import shutil
@@ -10,8 +8,8 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 
+# Read CSV with encoding
 def read_csv(csv_path: Path, encoding: str = 'utf-8-sig') -> pd.DataFrame:
-    """Read CSV file with encoding support."""
     if not csv_path.exists():
         raise FileNotFoundError(f"CSV file not found: {csv_path}")
     
@@ -21,21 +19,17 @@ def read_csv(csv_path: Path, encoding: str = 'utf-8-sig') -> pd.DataFrame:
     return df
 
 
-def save_csv(
-    df: pd.DataFrame,
-    output_path: Path,
-    description: str = "DataFrame",
-    encoding: str = 'utf-8-sig'
-) -> Path:
-    """Save DataFrame to CSV."""
+# Save DataFrame to CSV
+def save_csv(df: pd.DataFrame, output_path: Path, description: str = "DataFrame",
+             encoding: str = 'utf-8-sig') -> Path:
     df.to_csv(output_path, index=False, encoding=encoding)
     size_mb = output_path.stat().st_size / 1024 / 1024
     logger.info(f"Saved {description} to {output_path.name} ({len(df):,} records, {size_mb:.2f} MB)")
     return output_path
 
 
+# Create backup and keep only recent ones
 def create_backup(csv_path: Path, backup_count: int = 5):
-    """Create timestamped backup and maintain backup count."""
     if not csv_path.exists():
         logger.warning(f"Cannot backup {csv_path.name}: file not found")
         return
@@ -58,22 +52,9 @@ def create_backup(csv_path: Path, backup_count: int = 5):
         logger.info(f"Removed old backup: {old_backup.name}")
 
 
-def merge_with_base(
-    new_df: pd.DataFrame,
-    base_path: Path,
-    strategy: str = 'append'
-) -> pd.DataFrame:
-    """
-    Merge new data with base CSV.
-    
-    Args:
-        new_df: New data to merge
-        base_path: Path to base CSV file
-        strategy: 'append' (simple concatenation) or other strategies as needed
-    
-    Returns:
-        Merged DataFrame
-    """
+# Merge new data with base CSV
+def merge_with_base(new_df: pd.DataFrame, base_path: Path, 
+                    strategy: str = 'append') -> pd.DataFrame:
     base_df = read_csv(base_path)
     logger.info(f"Merging: {len(base_df):,} base + {len(new_df):,} new rows")
     
@@ -95,8 +76,8 @@ def merge_with_base(
     return merged
 
 
+# Detect file type from extension
 def detect_file_type(file_path: Path) -> str:
-    """Detect file type from extension."""
     ext = file_path.suffix.lower()
     
     if ext in ['.xlsx', '.xls', '.xlsm']:
@@ -107,8 +88,8 @@ def detect_file_type(file_path: Path) -> str:
         raise ValueError(f"Unsupported file type: {ext}")
 
 
+# Validate CSV columns
 def validate_csv_structure(df: pd.DataFrame, expected_columns: list) -> bool:
-    """Validate CSV has expected column structure."""
     missing_cols = [col for col in expected_columns if col not in df.columns]
     
     if missing_cols:

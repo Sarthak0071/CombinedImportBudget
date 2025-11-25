@@ -1,4 +1,3 @@
-"""Convert cumulative values to monthly values."""
 import pandas as pd
 import logging
 from typing import Tuple
@@ -9,11 +8,9 @@ from .cleaner import get_iso2_code
 logger = logging.getLogger(__name__)
 
 
-def calculate_previous_cumulative(
-    previous_df: pd.DataFrame, 
-    trade_type: str
-) -> pd.DataFrame:
-    """Sum monthly records to get cumulative values."""
+# Sum monthly records to get cumulative
+def calculate_previous_cumulative(previous_df: pd.DataFrame, 
+                                   trade_type: str) -> pd.DataFrame:
     direction = 'I' if trade_type == 'import' else 'E'
     df = previous_df[previous_df['Direction'] == direction].copy()
     
@@ -44,12 +41,10 @@ def calculate_previous_cumulative(
     return cumulative
 
 
-def calculate_monthly_values(
-    current_cumulative: pd.DataFrame,
-    previous_cumulative: pd.DataFrame,
-    trade_type: str
-) -> pd.DataFrame:
-    """Calculate monthly values by subtracting previous cumulative from current."""
+# Calculate monthly by subtracting previous from current
+def calculate_monthly_values(current_cumulative: pd.DataFrame,
+                             previous_cumulative: pd.DataFrame,
+                             trade_type: str) -> pd.DataFrame:
     logger.info(f"Calculating monthly {trade_type} values")
     
     current_cumulative = current_cumulative.copy()
@@ -134,11 +129,9 @@ def process_trade_type(
     return monthly_df
 
 
-def combine_import_export(
-    import_df: pd.DataFrame, 
-    export_df: pd.DataFrame
-) -> pd.DataFrame:
-    """Combine import and export dataframes."""
+# Combine import and export data
+def combine_import_export(import_df: pd.DataFrame, 
+                          export_df: pd.DataFrame) -> pd.DataFrame:
     dfs_to_combine = []
     
     if not import_df.empty:
@@ -159,11 +152,9 @@ def combine_import_export(
     return combined
 
 
-def create_cumulative_dataframe(
-    import_cumulative: pd.DataFrame,
-    export_cumulative: pd.DataFrame
-) -> pd.DataFrame:
-    """Create combined cumulative dataframe from import and export data."""
+# Create combined cumulative dataframe
+def create_cumulative_dataframe(import_cumulative: pd.DataFrame,
+                                export_cumulative: pd.DataFrame) -> pd.DataFrame:
     dfs = []
     
     if import_cumulative is not None and not import_cumulative.empty:

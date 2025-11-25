@@ -1,5 +1,3 @@
-"""Main API for processing monthly trade data."""
-
 import sys
 import logging
 from pathlib import Path
@@ -7,15 +5,8 @@ from typing import Union
 import pandas as pd
 
 from .excel_reader import read_cumulative_excel
-from .csv_handler import (
-    read_done_csv,
-    filter_prev_data,
-    save_updated_csv
-)
-from .calculator import (
-    process_trade_type,
-    combine_import_export
-)
+from .csv_handler import read_done_csv, filter_prev_data, save_updated_csv
+from .calculator import process_trade_type, combine_import_export
 from .cleaner import clean_monthly_data
 from .config import DATA_DIR, TARGET_YEAR, TARGET_MONTH, NEPALI_MONTHS
 from ..core.io import create_backup, save_csv
@@ -25,22 +16,10 @@ setup_logging(level=logging.INFO)
 logger = get_logger(__name__)
 
 
-def process_monthly_data(
-    xlsx_file: Union[str, Path],
-    old_data: Union[str, Path],
-    output_name: str = 'updateddone.csv'
-) -> pd.DataFrame:
-    """
-    Process cumulative trade data and calculate monthly values.
+# Calculate monthly trade values from cumulative data
+def process_monthly_data(xlsx_file: Union[str, Path], old_data: Union[str, Path], 
+                         output_name: str = 'updateddone.csv') -> pd.DataFrame:
     
-    Args:
-        xlsx_file: Path to Excel file with cumulative import/export data
-        old_data: Path to historical CSV file
-        output_name: Name for output file
-    
-    Returns:
-        DataFrame with updated combined data
-    """
     xlsx_path = Path(xlsx_file)
     old_data_path = Path(old_data)
     
@@ -51,6 +30,7 @@ def process_monthly_data(
     
     file_ext = xlsx_path.suffix.lower()
     
+    # Read Excel or CSV input
     if file_ext in ['.xlsx', '.xls']:
         import_cumulative, export_cumulative = read_cumulative_excel(xlsx_path)
         if import_cumulative is None and export_cumulative is None:
@@ -59,19 +39,23 @@ def process_monthly_data(
     elif file_ext == '.csv':
         cumulative_df = pd.read_csv(xlsx_path)
         if 'Direction' not in cumulative_df.columns:
-            raise ValueError("CSV must have 'Direction' column with 'I' or 'E'")
+            raise ValueError("CSV must have 'Direction' column")
         
-        import_cumulative = cumulative_df[cumulative_df['Direction'] == 'I'].copy() if 'I' in cumulative_df['Direction'].values else None
-        export_cumulative = cumulative_df[cumulative_df['Direction'] == 'E'].copy() if 'E' in cumulative_df['Direction'].values else None
+        import_cumulative = cumulative_df[cumulative_df['Direction'] == 'I'].copy() \
+            if 'I' in cumulative_df['Direction'].values else None
+        export_cumulative = cumulative_df[cumulative_df['Direction'] == 'E'].copy() \
+            if 'E' in cumulative_df['Direction'].values else None
         
         if import_cumulative is None and export_cumulative is None:
-            raise ValueError("CSV must contain records with Direction 'I' or 'E'")
+            raise ValueError("No data with Direction 'I' or 'E'")
     else:
         raise ValueError(f"Unsupported file type: {file_ext}")
     
+    # Get previous month data for calculation
     done_df = read_done_csv(old_data_path)
     previous_filtered = filter_prev_data(done_df)
     
+    # Calculate monthly values (current - previous)
     import_monthly = pd.DataFrame()
     if import_cumulative is not None:
         import_monthly = process_trade_type(import_cumulative, previous_filtered, 'import')
@@ -80,17 +64,19 @@ def process_monthly_data(
     if export_cumulative is not None:
         export_monthly = process_trade_type(export_cumulative, previous_filtered, 'export')
     
+    # Combine and clean
     monthly_df = combine_import_export(import_monthly, export_monthly)
     monthly_df = clean_monthly_data(monthly_df)
     
+    # Save monthly data
     monthly_only_path = old_data_path.parent / 'month.csv'
     save_csv(monthly_df, monthly_only_path, "Monthly data")
     
+    # Backup and update historical file
     create_backup(old_data_path)
     final_path = save_updated_csv(old_data_path, monthly_df, output_name)
     
-    result_df = pd.read_csv(final_path)
-    return result_df
+    return pd.read_csv(final_path)
 
 
 __all__ = ['process_monthly_data']

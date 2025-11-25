@@ -1,5 +1,3 @@
-"""Base Excel reading functionality."""
-
 import pandas as pd
 import logging
 from pathlib import Path
@@ -8,8 +6,8 @@ from typing import Optional, List
 logger = logging.getLogger(__name__)
 
 
+# Base class for Excel readers
 class BaseExcelReader:
-    """Base class for reading Excel files with domain-specific implementations."""
     
     def __init__(self, excel_path: Path):
         if not excel_path.exists():
@@ -20,8 +18,8 @@ class BaseExcelReader:
         self.sheet_names = self.xl_file.sheet_names
         logger.info(f"Loaded Excel: {excel_path.name} ({len(self.sheet_names)} sheets)")
     
+    # Find sheets matching keywords
     def detect_sheets(self, keywords: List[str]) -> List[str]:
-        """Detect relevant sheet names based on keywords."""
         relevant = []
         for name in self.sheet_names:
             name_lower = name.lower()
@@ -33,13 +31,9 @@ class BaseExcelReader:
         logger.info(f"Detected {len(relevant)} relevant sheets: {relevant}")
         return relevant
     
-    def read_sheet(
-        self,
-        sheet_name: str,
-        skip_rows: int = 0,
-        header: Optional[int] = 0
-    ) -> pd.DataFrame:
-        """Read a specific sheet from Excel."""
+    # Read Excel sheet
+    def read_sheet(self, sheet_name: str, skip_rows: int = 0, 
+                   header: Optional[int] = 0) -> pd.DataFrame:
         logger.info(f"Reading sheet: {sheet_name}")
         
         df = pd.read_excel(
@@ -53,5 +47,4 @@ class BaseExcelReader:
         return df
     
     def close(self):
-        """Close Excel file."""
         self.xl_file.close()

@@ -1,5 +1,3 @@
-"""Main API for budget data processing."""
-
 import logging
 from pathlib import Path
 import pandas as pd
@@ -12,25 +10,10 @@ setup_logging(level=logging.INFO)
 logger = get_logger(__name__)
 
 
-def process_monthly_data(
-    xlsx_file: str,
-    old_data: str = None,
-    output_name: str = None
-) -> pd.DataFrame:
-    """
-    Process budget data from Excel/CSV and return clean DataFrame.
+# Process budget file and return clean data (optionally merge with historical)
+def process_monthly_data(xlsx_file: str, old_data: str = None, 
+                         output_name: str = None) -> pd.DataFrame:
     
-    Primary use: Extract clean year data only (no merging needed).
-    Optional: Merge with base data if old_data is provided.
-    
-    Args:
-        xlsx_file: Path to input file (.xlsx, .xls, or .csv)
-        old_data: Optional path to base historical data
-        output_name: Optional output filename for combined data
-    
-    Returns:
-        Clean budget DataFrame
-    """
     try:
         input_file = Path(xlsx_file)
         if not input_file.exists():
@@ -38,6 +21,7 @@ def process_monthly_data(
         
         file_ext = input_file.suffix.lower()
         
+        # Read Excel or CSV
         if file_ext in ['.xlsx', '.xls', '.xlsm']:
             new_data = extract_budget_data(input_file)
         elif file_ext == '.csv':
@@ -46,11 +30,12 @@ def process_monthly_data(
         else:
             raise ValueError(f"Unsupported file type: {file_ext}")
         
+        # Save year-specific file
         year = new_data['Year'].iloc[0] if 'Year' in new_data.columns else 'unknown'
         year_csv_name = f"{year}.csv".replace('/', '-')
-        
         save_csv(new_data, Path(year_csv_name), f"Year {year} data")
         
+        # Optionally merge with historical data
         if old_data:
             base_file = Path(old_data)
             if not base_file.exists():
@@ -60,25 +45,17 @@ def process_monthly_data(
             output_path = Path(output_name or 'output.csv')
             save_csv(merged, output_path, "Combined budget data")
             return merged
-        else:
-            return new_data
+        
+        return new_data
         
     except Exception as e:
         logger.error(f"Error: {e}")
         raise
 
 
+# Extract year data only (no merging)
 def extract_year_data(xlsx_file: str, output_name: str = None) -> pd.DataFrame:
-    """
-    Extract and clean year data from Excel/CSV without merging.
     
-    Args:
-        xlsx_file: Path to input file
-        output_name: Optional output filename
-    
-    Returns:
-        DataFrame with clean year data
-    """
     try:
         input_file = Path(xlsx_file)
         if not input_file.exists():
@@ -106,13 +83,15 @@ def extract_year_data(xlsx_file: str, output_name: str = None) -> pd.DataFrame:
         raise
 
 
-def process_excel_data(excel_file: str, old_data: str = 'done.csv', output_name: str = 'updated.csv') -> pd.DataFrame:
-    """Process Excel budget file, return merged DataFrame."""
+# Wrapper for Excel files
+def process_excel_data(excel_file: str, old_data: str = 'done.csv', 
+                       output_name: str = 'updated.csv') -> pd.DataFrame:
     return process_monthly_data(excel_file, old_data, output_name)
 
 
-def process_csv_data(csv_file: str, old_data: str = 'done.csv', output_name: str = 'updated.csv') -> pd.DataFrame:
-    """Process CSV budget file, return merged DataFrame."""
+# Wrapper for CSV files
+def process_csv_data(csv_file: str, old_data: str = 'done.csv', 
+                     output_name: str = 'updated.csv') -> pd.DataFrame:
     return process_monthly_data(csv_file, old_data, output_name)
 
 
