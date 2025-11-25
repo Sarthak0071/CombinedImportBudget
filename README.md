@@ -13,16 +13,16 @@ pip install git+https://github.com/Sarthak0071/CombinedImportBudget.git
 ### Budget Processing
 
 ```python
-from data_pipeline.budget import monthly_data
+from data_pipeline.budget import process_data
 
-result = monthly_data('data/82-83.xlsx')
+result = process_data('data/82-83.xlsx')
 # Output: 2082.csv
 ```
 
 Optional - merge with historical data:
 
 ```python
-result = monthly_data(
+result = process_data(
     xlsx_file='data/82-83.xlsx',
     old_data='done.csv',
     output_name='output.csv'
@@ -33,9 +33,9 @@ result = monthly_data(
 ### Trade Processing
 
 ```python
-from data_pipeline.trade import monthly_data
+from data_pipeline.trade import process_data
 
-result = monthly_data(
+result = process_data(
     xlsx_file='data/FTS.xlsx',
     old_data='data/done.csv',
     output_name='updateddone.csv'
