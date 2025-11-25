@@ -35,58 +35,43 @@ def process_monthly_data(
     
     Args:
         xlsx_file: Path to Excel file with cumulative import/export data
-        old_data: Path to historical CSV file (done.csv)
-        output_name: Name for output file (default: 'updateddone.csv')
+        old_data: Path to historical CSV file
+        output_name: Name for output file
     
     Returns:
         DataFrame with updated combined data
-    
-    Outputs created:
-        - month.csv: Monthly data only (for current month)
-        - {output_name}: Historical + new monthly data combined
     """
-    logger.info(f"Starting monthly data processing for {NEPALI_MONTHS[TARGET_MONTH]} {TARGET_YEAR}")
-    
     xlsx_path = Path(xlsx_file)
     old_data_path = Path(old_data)
     
     if not xlsx_path.exists():
-        raise FileNotFoundError(f"Data file not found: {xlsx_path}")
+        raise FileNotFoundError(f"File not found: {xlsx_path}")
     if not old_data_path.exists():
-        raise FileNotFoundError(f"CSV file not found: {old_data_path}")
+        raise FileNotFoundError(f"File not found: {old_data_path}")
     
     file_ext = xlsx_path.suffix.lower()
     
     if file_ext in ['.xlsx', '.xls']:
-        logger.info(f"Reading Excel file: {xlsx_path.name}")
         import_cumulative, export_cumulative = read_cumulative_excel(xlsx_path)
-        
         if import_cumulative is None and export_cumulative is None:
-            raise ValueError("Failed to read import and export data from Excel file")
+            raise ValueError("Failed to read import and export data")
     
     elif file_ext == '.csv':
-        logger.info(f"Reading CSV file: {xlsx_path.name}")
         cumulative_df = pd.read_csv(xlsx_path)
-        
         if 'Direction' not in cumulative_df.columns:
-            raise ValueError("CSV file must have 'Direction' column with values 'I' (Import) or 'E' (Export)")
+            raise ValueError("CSV must have 'Direction' column with 'I' or 'E'")
         
         import_cumulative = cumulative_df[cumulative_df['Direction'] == 'I'].copy() if 'I' in cumulative_df['Direction'].values else None
         export_cumulative = cumulative_df[cumulative_df['Direction'] == 'E'].copy() if 'E' in cumulative_df['Direction'].values else None
         
         if import_cumulative is None and export_cumulative is None:
-            raise ValueError("CSV file must contain records with Direction 'I' or 'E'")
-        
-        logger.info(f"Found {len(import_cumulative) if import_cumulative is not None else 0} import records, {len(export_cumulative) if export_cumulative is not None else 0} export records")
-    
+            raise ValueError("CSV must contain records with Direction 'I' or 'E'")
     else:
-        raise ValueError(f"Unsupported file type: {file_ext}. Supported types: .xlsx, .xls, .csv")
+        raise ValueError(f"Unsupported file type: {file_ext}")
     
-    logger.info(f"Reading historical CSV: {old_data_path.name}")
     done_df = read_done_csv(old_data_path)
     previous_filtered = filter_prev_data(done_df)
     
-    logger.info("Calculating monthly values from cumulative data")
     import_monthly = pd.DataFrame()
     if import_cumulative is not None:
         import_monthly = process_trade_type(import_cumulative, previous_filtered, 'import')
@@ -99,19 +84,10 @@ def process_monthly_data(
     monthly_df = clean_monthly_data(monthly_df)
     
     monthly_only_path = old_data_path.parent / 'month.csv'
-    logger.info(f"Saving monthly-only data to month.csv ({len(monthly_df):,} records)")
     save_csv(monthly_df, monthly_only_path, "Monthly data")
     
-    logger.info(f"Creating backup of {old_data_path.name}")
     create_backup(old_data_path)
-    
-    logger.info(f"Saving combined data to {output_name}")
     final_path = save_updated_csv(old_data_path, monthly_df, output_name)
-    
-    logger.info(f"Processing complete: {len(monthly_df):,} new monthly records")
-    logger.info(f"Output files created:")
-    logger.info(f"  - {monthly_only_path.name} (monthly data only)")
-    logger.info(f"  - {final_path.name} (historical + new data)")
     
     result_df = pd.read_csv(final_path)
     return result_df
