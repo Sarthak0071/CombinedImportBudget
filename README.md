@@ -12,19 +12,17 @@ pip install git+https://github.com/Sarthak0071/CombinedImportBudget.git
 
 ### Budget Processing
 
-Extract clean year data from Excel/CSV:
-
 ```python
-from data_pipeline.budget import process_monthly_data
+from data_pipeline.budget import monthly_data
 
-result = process_monthly_data('data/82-83.xlsx')
+result = monthly_data('data/82-83.xlsx')
 # Output: 2082.csv
 ```
 
 Optional - merge with historical data:
 
 ```python
-result = process_monthly_data(
+result = monthly_data(
     xlsx_file='data/82-83.xlsx',
     old_data='done.csv',
     output_name='output.csv'
@@ -34,13 +32,11 @@ result = process_monthly_data(
 
 ### Trade Processing
 
-Calculate monthly values from cumulative import/export data:
-
 ```python
-from data_pipeline.trade import process_monthly_data
+from data_pipeline.trade import monthly_data
 
-result = process_monthly_data(
-    xlsx_file='data/FTS_uptoAsoj_208283.xlsx',
+result = monthly_data(
+    xlsx_file='data/FTS.xlsx',
     old_data='data/done.csv',
     output_name='updateddone.csv'
 )

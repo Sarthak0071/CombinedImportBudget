@@ -17,8 +17,8 @@ logger = get_logger(__name__)
 
 
 # Calculate monthly trade values from cumulative data
-def process_monthly_data(xlsx_file: Union[str, Path], old_data: Union[str, Path], 
-                         output_name: str = 'updateddone.csv') -> pd.DataFrame:
+def monthly_data(xlsx_file: Union[str, Path], old_data: Union[str, Path], 
+                 output_name: str = 'updateddone.csv') -> pd.DataFrame:
     
     xlsx_path = Path(xlsx_file)
     old_data_path = Path(old_data)
@@ -79,7 +79,7 @@ def process_monthly_data(xlsx_file: Union[str, Path], old_data: Union[str, Path]
     return pd.read_csv(final_path)
 
 
-__all__ = ['process_monthly_data']
+__all__ = ['monthly_data']
 
 
 if __name__ == '__main__':

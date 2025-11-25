@@ -11,8 +11,8 @@ logger = get_logger(__name__)
 
 
 # Process budget file and return clean data (optionally merge with historical)
-def process_monthly_data(xlsx_file: str, old_data: str = None, 
-                         output_name: str = None) -> pd.DataFrame:
+def monthly_data(xlsx_file: str, old_data: str = None, 
+                 output_name: str = None) -> pd.DataFrame:
     
     try:
         input_file = Path(xlsx_file)
@@ -86,16 +86,16 @@ def extract_year_data(xlsx_file: str, output_name: str = None) -> pd.DataFrame:
 # Wrapper for Excel files
 def process_excel_data(excel_file: str, old_data: str = 'done.csv', 
                        output_name: str = 'updated.csv') -> pd.DataFrame:
-    return process_monthly_data(excel_file, old_data, output_name)
+    return monthly_data(excel_file, old_data, output_name)
 
 
 # Wrapper for CSV files
 def process_csv_data(csv_file: str, old_data: str = 'done.csv', 
                      output_name: str = 'updated.csv') -> pd.DataFrame:
-    return process_monthly_data(csv_file, old_data, output_name)
+    return monthly_data(csv_file, old_data, output_name)
 
 
-__all__ = ['process_monthly_data', 'process_excel_data', 'process_csv_data', 'extract_year_data']
+__all__ = ['monthly_data', 'process_excel_data', 'process_csv_data', 'extract_year_data']
 
 
 if __name__ == '__main__':
