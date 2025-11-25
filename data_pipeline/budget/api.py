@@ -14,35 +14,33 @@ logger = get_logger(__name__)
 
 def process_monthly_data(
     xlsx_file: str,
-    old_data: str = 'done.csv',
-    output_name: str = 'output.csv'
+    old_data: str = None,
+    output_name: str = None
 ) -> pd.DataFrame:
     """
-    Process budget data from Excel/CSV, merge with base data, return merged DataFrame.
+    Process budget data from Excel/CSV and return clean DataFrame.
+    
+    Primary use: Extract clean year data only (no merging needed).
+    Optional: Merge with base data if old_data is provided.
     
     Args:
         xlsx_file: Path to input file (.xlsx, .xls, or .csv)
-        old_data: Path to base historical data (default: 'done.csv')
-        output_name: Output filename for combined data (default: 'output.csv')
+        old_data: Optional path to base historical data (if you want to merge)
+        output_name: Optional output filename for combined data
     
     Returns:
-        Merged budget DataFrame
+        Clean budget DataFrame
     
     Outputs created:
-        - {year}.csv: Year-specific clean data (e.g., 2082.csv)
-        - {output_name}: Combined historical + new data
+        - {year}.csv: Year-specific clean data (e.g., 2082.csv) - ALWAYS created
+        - {output_name}: Combined historical + new data - ONLY if old_data provided
     """
     try:
         logger.info(f"Starting budget data processing")
-        logger.info(f"Input: {xlsx_file} | Base: {old_data} | Output: {output_name}")
         
         input_file = Path(xlsx_file)
         if not input_file.exists():
             raise FileNotFoundError(f"File not found: {xlsx_file}")
-        
-        base_file = Path(old_data)
-        if not base_file.exists():
-            raise FileNotFoundError(f"File not found: {old_data}")
         
         file_ext = input_file.suffix.lower()
         
@@ -54,9 +52,6 @@ def process_monthly_data(
             logger.info("Detected CSV file")
             new_data = load_csv(input_file)
             new_data = standardize_data(new_data)
-            
-            if 'Direction' in new_data.columns:
-                logger.info(f"Found 'Direction' column with values: {new_data['Direction'].unique()}")
         else:
             raise ValueError(f"Unsupported file type: {file_ext}. Supported: .xlsx, .xls, .csv")
         
@@ -64,19 +59,27 @@ def process_monthly_data(
         year = new_data['Year'].iloc[0] if 'Year' in new_data.columns else 'unknown'
         year_csv_name = f"{year}.csv".replace('/', '-')
         
-        # Save year-specific CSV
+        # ALWAYS save year-specific CSV
         save_csv(new_data, Path(year_csv_name), f"Year {year} data")
         
-        # Merge with base
-        merged = merge_with_base(new_data, base_file)
-        
-        # Save merged output
-        output_path = Path(output_name)
-        save_csv(merged, output_path, "Combined budget data")
-        
-        logger.info(f"SUCCESS: Created 2 files - {year_csv_name} and {output_name}")
-        
-        return merged
+        # OPTIONAL: Merge with base if old_data provided
+        if old_data:
+            base_file = Path(old_data)
+            if not base_file.exists():
+                raise FileNotFoundError(f"Base file not found: {old_data}")
+            
+            logger.info(f"Merging with base: {old_data}")
+            merged = merge_with_base(new_data, base_file)
+            
+            # Save merged output
+            output_path = Path(output_name or 'output.csv')
+            save_csv(merged, output_path, "Combined budget data")
+            
+            logger.info(f"SUCCESS: Created {year_csv_name} and {output_path.name}")
+            return merged
+        else:
+            logger.info(f"SUCCESS: Created {year_csv_name} (clean year data only)")
+            return new_data
         
     except FileNotFoundError as e:
         logger.error(f"File not found: {e}")
