@@ -117,8 +117,26 @@ def find_data_start_row(df_sample: pd.DataFrame) -> int:
     return 0
 
 
-# Validate DataFrame has required columns
-def validate_columns(df: pd.DataFrame, required_cols: list) -> bool:
+def find_target_sheet(sheet_names: list, keywords: list) -> Optional[str]:
+    """Find Excel sheet containing target data based on keywords."""
+    for name in sheet_names:
+        name_lower = name.lower()
+        for keyword in keywords:
+            if str(keyword) in name_lower:
+                return name
+    
+    return None
+
+
+def create_composite_key(df: pd.DataFrame, key_cols: list) -> pd.DataFrame:
+    """Create composite key for grouping/matching."""
+    df = df.copy()
+    df['_key'] = df[key_cols].astype(str).agg('|'.join, axis=1)
+    return df
+
+
+def validate_dataframe(df: pd.DataFrame, required_cols: list) -> bool:
+    """Validate DataFrame has required columns."""
     missing = [col for col in required_cols if col not in df.columns]
     
     if missing:
