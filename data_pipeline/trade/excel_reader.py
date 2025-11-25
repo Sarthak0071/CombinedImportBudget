@@ -2,47 +2,6 @@
 
 import pandas as pd
 import logging
-from pathlib import Path
-from typing import Optional, Tuple
-
-from ..core.io import BaseExcelReader
-from ..core.utils import (
-    find_data_start_row,
-    find_target_sheet,
-    standardize_column_names,
-    clean_numeric_column,
-    remove_total_rows
-)
-from .config import IMPORT_SHEET_KEYWORDS, EXPORT_SHEET_KEYWORDS
-
-logger = logging.getLogger(__name__)
-
-
-class TradeExcelReader(BaseExcelReader):
-    """Excel reader for trade data (Table 4 = Import, Table 6 = Export)."""
-    
-    def read_import_data(self) -> Optional[pd.DataFrame]:
-        """Read import data from Excel file (Table 4)."""
-        return self._read_trade_data('import', IMPORT_SHEET_KEYWORDS)
-    
-    def read_export_data(self) -> Optional[pd.DataFrame]:
-        """Read export data from Excel file (Table 6)."""
-        return self._read_trade_data('export', EXPORT_SHEET_KEYWORDS)
-    
-    def _read_trade_data(
-        self,
-        trade_type: str,
-        keywords: list
-    ) -> Optional[pd.DataFrame]:
-        """Internal function to read trade data from Excel."""
-        try:
-            target_sheet = find_target_sheet(self.sheet_names, keywords)
-            
-            if not target_sheet:
-                logger.warning(f"No {trade_type} sheet found")
-                return None
-            
-            logger.info(f"Reading {trade_type} from {self.excel_path.name}, sheet: {target_sheet}")
             
             # Find data start row
             df_sample = pd.read_excel(

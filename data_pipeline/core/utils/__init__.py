@@ -7,9 +7,7 @@ from .data_utils import (
     remove_total_rows,
     standardize_column_names,
     find_data_start_row,
-    find_target_sheet,
-    create_composite_key,
-    validate_dataframe
+    validate_columns
 )
 
 from .logging_config import setup_logging, get_logger
@@ -21,9 +19,7 @@ __all__ = [
     'remove_total_rows',
     'standardize_column_names',
     'find_data_start_row',
-    'find_target_sheet',
-    'create_composite_key',
-    'validate_dataframe',
+    'validate_columns',
     'setup_logging',
     'get_logger'
 ]

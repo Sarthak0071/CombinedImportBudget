@@ -76,23 +76,4 @@ def merge_with_base(new_df: pd.DataFrame, base_path: Path,
     return merged
 
 
-# Detect file type from extension
-def detect_file_type(file_path: Path) -> str:
-    ext = file_path.suffix.lower()
-    
-    if ext in ['.xlsx', '.xls', '.xlsm']:
-        return 'excel'
-    elif ext == '.csv':
-        return 'csv'
-    else:
-        raise ValueError(f"Unsupported file type: {ext}")
 
-
-# Validate CSV columns
-def validate_csv_structure(df: pd.DataFrame, expected_columns: list) -> bool:
-    missing_cols = [col for col in expected_columns if col not in df.columns]
-    
-    if missing_cols:
-        raise ValueError(f"CSV missing columns: {missing_cols}")
-    
-    return True
