@@ -12,6 +12,12 @@ from .data_utils import (
     validate_dataframe
 )
 
+from .column_matcher import (
+    find_column,
+    find_columns,
+    rename_columns_fuzzy
+)
+
 from .logging_config import setup_logging, get_logger
 
 __all__ = [
@@ -24,6 +30,9 @@ __all__ = [
     'find_target_sheet',
     'create_composite_key',
     'validate_dataframe',
+    'find_column',
+    'find_columns',
+    'rename_columns_fuzzy',
     'setup_logging',
     'get_logger'
 ]
