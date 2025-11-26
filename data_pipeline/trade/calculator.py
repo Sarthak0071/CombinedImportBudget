@@ -1,14 +1,27 @@
 import pandas as pd
 import logging
-from typing import Tuple
 
-from .config import TARGET_YEAR, TARGET_MONTH, NEPALI_MONTHS
+from .config import TARGET_YEAR, TARGET_MONTH
 from .cleaner import get_iso2_code  
+from ..core.utils import clean_hs_code, create_key
 
 logger = logging.getLogger(__name__)
 
 
-# Sum monthly records to get cumulative
+def get_trade_agg_dict(trade_type: str, has_revenue: bool) -> dict:
+    """Build aggregation dictionary for trade data grouping."""
+    agg = {
+        'HS_Code': 'first',
+        'Country': 'first',
+        'Value': 'sum',
+        'Quantity': 'sum',
+        'Unit': 'first'
+    }
+    if trade_type == 'import' and has_revenue:
+        agg['Revenue'] = 'sum'
+    return agg
+
+
 def calculate_previous_cumulative(previous_df: pd.DataFrame, 
                                    trade_type: str) -> pd.DataFrame:
     direction = 'I' if trade_type == 'import' else 'E'
@@ -20,49 +33,28 @@ def calculate_previous_cumulative(previous_df: pd.DataFrame,
     
     logger.info(f"Calculating {trade_type} cumulative from {len(df):,} records")
     
-    df['HS_Code'] = df['HS_Code'].astype(str).str.strip().str.replace('.0', '', regex=False)
+    df = clean_hs_code(df)
     df['Country'] = df['Country'].astype(str).str.strip()
-    df['_key'] = df['HS_Code'] + '|' + df['Country']
+    df = create_key(df, 'HS_Code', 'Country')
     
-    agg_dict = {
-        'HS_Code': 'first',
-        'Country': 'first',
-        'Value': 'sum',
-        'Quantity': 'sum',
-        'Unit': 'first'
-    }
-    
-    if trade_type == 'import' and 'Revenue' in df.columns:
-        agg_dict['Revenue'] = 'sum'
-    
+    agg_dict = get_trade_agg_dict(trade_type, 'Revenue' in df.columns)
     cumulative = df.groupby('_key', as_index=False).agg(agg_dict)
     logger.info(f"Result: {len(cumulative):,} unique keys, total value: {cumulative['Value'].sum():,.2f}")
     
     return cumulative
 
 
-# Calculate monthly by subtracting previous from current
 def calculate_monthly_values(current_cumulative: pd.DataFrame,
                              previous_cumulative: pd.DataFrame,
                              trade_type: str) -> pd.DataFrame:
     logger.info(f"Calculating monthly {trade_type} values")
     
     current_cumulative = current_cumulative.copy()
-    current_cumulative['HS_Code'] = current_cumulative['HS_Code'].astype(str).str.strip().str.replace('.0', '', regex=False)
+    current_cumulative = clean_hs_code(current_cumulative)
     current_cumulative['Country'] = current_cumulative['Country'].apply(get_iso2_code)
-    current_cumulative['_key'] = current_cumulative['HS_Code'] + '|' + current_cumulative['Country']
+    current_cumulative = create_key(current_cumulative, 'HS_Code', 'Country')
     
-    agg_dict = {
-        'HS_Code': 'first',
-        'Country': 'first',
-        'Value': 'sum',
-        'Quantity': 'sum',
-        'Unit': 'first'
-    }
-    
-    if trade_type == 'import' and 'Revenue' in current_cumulative.columns:
-        agg_dict['Revenue'] = 'sum'
-    
+    agg_dict = get_trade_agg_dict(trade_type, 'Revenue' in current_cumulative.columns)
     current_aggregated = current_cumulative.groupby('_key', as_index=False).agg(agg_dict)
     current_dict = current_aggregated.set_index('_key').to_dict('index')
     
@@ -119,17 +111,10 @@ def process_trade_type(
     trade_type: str
 ) -> pd.DataFrame:
     previous_cumulative = calculate_previous_cumulative(previous_filtered, trade_type)
-    
-    monthly_df = calculate_monthly_values(
-        current_cumulative, 
-        previous_cumulative, 
-        trade_type
-    )
-    
+    monthly_df = calculate_monthly_values(current_cumulative, previous_cumulative, trade_type)
     return monthly_df
 
 
-# Combine import and export data
 def combine_import_export(import_df: pd.DataFrame, 
                           export_df: pd.DataFrame) -> pd.DataFrame:
     dfs_to_combine = []
@@ -152,7 +137,6 @@ def combine_import_export(import_df: pd.DataFrame,
     return combined
 
 
-# Create combined cumulative dataframe
 def create_cumulative_dataframe(import_cumulative: pd.DataFrame,
                                 export_cumulative: pd.DataFrame) -> pd.DataFrame:
     dfs = []

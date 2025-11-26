@@ -89,4 +89,27 @@ def find_target_sheet(sheet_names: list, keywords: list) -> Optional[str]:
     return None
 
 
+def get_file_type(file_path: Path) -> str:
+    """Detect file type from extension."""
+    ext = file_path.suffix.lower()
+    if ext in ['.xlsx', '.xls', '.xlsm']:
+        return 'excel'
+    elif ext == '.csv':
+        return 'csv'
+    raise ValueError(f"Unsupported file type: {ext}")
+
+
+def create_key(df: pd.DataFrame, *cols) -> pd.DataFrame:
+    """Create composite key from multiple columns."""
+    df = df.copy()
+    df['_key'] = df[list(cols)].astype(str).agg('|'.join, axis=1)
+    return df
+
+
+def clean_hs_code(df: pd.DataFrame) -> pd.DataFrame:
+    """Clean HS_Code column (remove .0 suffix, strip whitespace)."""
+    df = df.copy()
+    if 'HS_Code' in df.columns:
+        df['HS_Code'] = df['HS_Code'].astype(str).str.strip().str.replace('.0', '', regex=False)
+    return df
 

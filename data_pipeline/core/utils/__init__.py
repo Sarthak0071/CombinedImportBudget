@@ -7,7 +7,10 @@ from .data_utils import (
     remove_total_rows,
     standardize_column_names,
     find_data_start_row,
-    find_target_sheet
+    find_target_sheet,
+    get_file_type,
+    create_key,
+    clean_hs_code
 )
 
 from .column_matcher import find_column
@@ -23,6 +26,9 @@ __all__ = [
     'find_data_start_row',
     'find_target_sheet',
     'find_column',
+    'get_file_type',
+    'create_key',
+    'clean_hs_code',
     'setup_logging',
     'get_logger'
 ]
