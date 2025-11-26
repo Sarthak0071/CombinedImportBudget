@@ -13,15 +13,30 @@ logger = logging.getLogger(__name__)
 
 
 def get_government_level(sheet_name: str) -> str:
-    """Determine government level from sheet name."""
-    sheet_lower = sheet_name.lower()
-    if "federal" in sheet_lower:
-        return "Federal"
-    elif "province" in sheet_lower or "provience" in sheet_lower:
-        return "Province"
-    elif "local" in sheet_lower:
-        return "Local"
-    return "Unknown"
+    """Determine government level from sheet name using fuzzy matching."""
+    from difflib import SequenceMatcher
+    
+    sheet_clean = sheet_name.lower().strip()
+    
+    keywords = {
+        'Federal': ['federal', 'फेडरल', 'federel', 'fedarel'],
+        'Province': ['province', 'प्रदेश', 'provience', 'provine', 'provinc'],
+        'Local': ['local', 'स्थानीय', 'lokal', 'lokl']
+    }
+    
+    best_match = 'Unknown'
+    best_ratio = 0.6
+    
+    for level, terms in keywords.items():
+        for term in terms:
+            if term in sheet_clean:
+                return level
+            ratio = SequenceMatcher(None, term, sheet_clean).ratio()
+            if ratio > best_ratio:
+                best_ratio = ratio
+                best_match = level
+    
+    return best_match
 
 
 class BudgetExcelReader(BaseExcelReader):
