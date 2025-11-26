@@ -28,28 +28,19 @@ def normalize_country_name(name: str) -> Optional[str]:
 
 def fuzzy_match_country(name: str, threshold: float = 0.85) -> Optional[str]:
     """Find country using fuzzy string matching."""
-    best_match = None
-    best_ratio = 0
     name_lower = name.lower()
     
+    def get_best_ratio(country):
+        ratios = [SequenceMatcher(None, name_lower, country.name.lower()).ratio()]
+        if hasattr(country, 'common_name'):
+            ratios.append(SequenceMatcher(None, name_lower, country.common_name.lower()).ratio())
+        return max(ratios)
+    
     try:
-        for country in pycountry.countries:
-            ratio = SequenceMatcher(None, name_lower, country.name.lower()).ratio()
-            if ratio > best_ratio:
-                best_ratio = ratio
-                best_match = country
-            
-            if hasattr(country, 'common_name'):
-                ratio = SequenceMatcher(None, name_lower, country.common_name.lower()).ratio()
-                if ratio > best_ratio:
-                    best_ratio = ratio
-                    best_match = country
-        
-        if best_ratio >= threshold and best_match:
+        best_match = max(pycountry.countries, key=get_best_ratio)
+        if get_best_ratio(best_match) >= threshold:
             return best_match.alpha_2
-        
         return None
-        
     except Exception as e:
         logger.error(f"Error in fuzzy matching for '{name}': {e}")
         return None

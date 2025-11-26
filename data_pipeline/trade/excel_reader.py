@@ -60,9 +60,32 @@ class TradeExcelReader(BaseExcelReader):
                 skiprows=skip_rows
             )
             
-            df = standardize_column_names(df, mode='trade')
+            df = standardize_column_names(df)
             
-            # Add missing columns with defaults
+            df.columns = [
+                str(c).lower().strip().replace(' ', '_').replace('.', '') 
+                for c in df.columns
+            ]
+            
+            col_map = {}
+            for col in df.columns:
+                if any(x in col for x in ['hscode', 'hs_code', 'code', 'hs']):
+                    col_map[col] = 'HS_Code'
+                elif any(x in col for x in ['description', 'commodity', 'item']):
+                    col_map[col] = 'Commodity'
+                elif any(x in col for x in ['partner', 'country', 'countries']):
+                    col_map[col] = 'Country'
+                elif col == 'unit':
+                    col_map[col] = 'Unit'
+                elif 'quantity' in col:
+                    col_map[col] = 'Quantity'
+                elif 'value' in col:
+                    col_map[col] = 'Value'
+                elif 'revenue' in col:
+                    col_map[col] = 'Revenue'
+            
+            df = df.rename(columns=col_map)
+            
             if 'Unit' not in df.columns:
                 df['Unit'] = 'pcs'
             if 'Quantity' not in df.columns:
@@ -70,17 +93,14 @@ class TradeExcelReader(BaseExcelReader):
             if trade_type == 'import' and 'Revenue' not in df.columns:
                 df['Revenue'] = 0
             
-            # Clean data
             df = df[df['HS_Code'].notna()]
             df = remove_total_rows(df, key_column='HS_Code')
             df = df.dropna(how='all')
             
-            # Clean numeric columns
             for col in ['Value', 'Quantity', 'Revenue']:
                 if col in df.columns:
                     df = clean_numeric_column(df, col)
             
-            # Clean string columns
             df['HS_Code'] = df['HS_Code'].astype(str).str.strip()
             df['Country'] = df['Country'].astype(str).str.strip().replace(
                 ['nan', 'None', ''], 'Unknown'

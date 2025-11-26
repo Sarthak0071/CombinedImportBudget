@@ -4,9 +4,7 @@ from .csv_handler import (
     read_csv,
     save_csv,
     create_backup,
-    merge_with_base,
-    detect_file_type,
-    validate_csv_structure
+    merge_with_base
 )
 
 from .excel_reader import BaseExcelReader
@@ -16,7 +14,5 @@ __all__ = [
     'save_csv',
     'create_backup',
     'merge_with_base',
-    'detect_file_type',
-    'validate_csv_structure',
     'BaseExcelReader'
 ]
