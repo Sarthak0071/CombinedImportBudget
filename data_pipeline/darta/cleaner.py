@@ -110,8 +110,8 @@ def clean_phone_number(phone: str) -> str:
     Clean phone numbers comprehensively.
     
     Rules:
-    - Remove text after / or -
-    - Extract only valid phone numbers from comma-separated
+    - Extract first valid 10-digit starting with 9 or 0
+    - Split on /, -, comma
     - Add 98 prefix to 8-digit mobile numbers
     - Keep landline numbers (01-xxx) as-is
     """
@@ -121,16 +121,18 @@ def clean_phone_number(phone: str) -> str:
     phone_str = str(phone).strip()
     phone_str = convert_nepali_to_english(phone_str)
     
-    if '/' in phone_str:
-        phone_str = phone_str.split('/')[0].strip()
-    
-    if ',' in phone_str:
-        parts = [p.strip() for p in phone_str.split(',')]
-        valid_parts = [p for p in parts if len(p) >= 8 and p.isdigit()]
-        if valid_parts:
-            phone_str = valid_parts[0]
-        else:
-            phone_str = phone_str.replace(',', '').strip()
+    separators = ['/', '-', ',']
+    for sep in separators:
+        if sep in phone_str:
+            parts = [p.strip() for p in phone_str.split(sep)]
+            for part in parts:
+                digits = ''.join(c for c in part if c.isdigit())
+                if len(digits) == 10 and digits[0] in ['9', '0']:
+                    return digits
+                elif len(digits) == 8:
+                    if digits[:2] != '01':
+                        return '98' + digits
+            phone_str = parts[0] if parts else phone_str
     
     phone_clean = ''.join(c for c in phone_str if c.isdigit() or c == '-')
     
@@ -139,7 +141,10 @@ def clean_phone_number(phone: str) -> str:
     
     digits_only = ''.join(c for c in phone_clean if c.isdigit())
     
-    if len(digits_only) == 8 and not phone_clean.startswith('0'):
+    if len(digits_only) == 10 and digits_only[0] in ['9', '0']:
+        return digits_only
+    
+    if len(digits_only) == 8:
         return '98' + digits_only
     
     if len(digits_only) == 10:
