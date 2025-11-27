@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List
 
 from ..core.io import BaseExcelReader
-from ..core.utils import extract_fiscal_year, clean_year_value
+from ..core.utils import extract_fiscal_year, clean_year_value, standardize_column_names
 from .config import STANDARD_COLUMNS, COLUMN_MAPPING, COLUMNS_TO_REMOVE, SHEET_PATTERNS
 
 logger = logging.getLogger(__name__)
@@ -67,9 +67,8 @@ class BudgetExcelReader(BaseExcelReader):
         for sheet in sheet_names:
             try:
                 df = self.read_sheet(sheet, skip_rows=0, header=0)
-                df = self._standardize_budget_columns(df)
+                df = standardize_column_names(df)
                 
-                # Remove unwanted columns
                 for col in COLUMNS_TO_REMOVE + [c for c in df.columns if "SUBSTR" in str(c).upper()]:
                     if col in df.columns:
                         df = df.drop(columns=[col])
@@ -94,20 +93,6 @@ class BudgetExcelReader(BaseExcelReader):
         available_cols = [col for col in STANDARD_COLUMNS if col in combined.columns]
         logger.info(f"Extracted {len(combined):,} total rows")
         return combined[available_cols]
-    
-    def _standardize_budget_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Clean and standardize budget column names."""
-        import re
-        new_columns = []
-        for col in df.columns:
-            if pd.isna(col) or str(col).strip() == "":
-                new_columns.append(None)
-                continue
-            col_str = str(col).strip()
-            col_str = re.sub(r'\s+', ' ', col_str).replace('\n', '')
-            new_columns.append(col_str)
-        df.columns = new_columns
-        return df.loc[:, df.columns.notna()]
 
 
 def extract_budget_data(file_path: Path, year: str = None) -> pd.DataFrame:

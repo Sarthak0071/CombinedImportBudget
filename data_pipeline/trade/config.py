@@ -19,7 +19,7 @@ NEPALI_MONTHS: Dict[int, str] = {
 
 MONTH_NAME_TO_NUMBER: Dict[str, int] = {
     'Baishakh': 1, 'Jestha': 2, 'Ashad': 3, 'Shrawan': 4,
-    'Bhadra': 5, 'Ashwin': 6, 'Kartik': 7, 'Mangsir': 8,
+    'Bhadra': 5, 'Ashwin': 6, 'Asoj': 6, 'Kartik': 7, 'Mangsir': 8,
     'Poush': 9, 'Magh': 10, 'Falgun': 11, 'Chaitra': 12
 }
 
@@ -81,10 +81,6 @@ OUTPUT_DIR = DATA_DIR
 UPDATED_CSV_NAME = 'doneupdated.csv'
 CUMULATIVE_CSV = 'ashwin_cumulative.csv'
 MONTHLY_CSV = 'ashwin_monthly.csv'
-
-TARGET_YEAR = 2082
-TARGET_MONTH = 6
-PREVIOUS_MONTH = 5
 
 EXPECTED_COLUMNS = ['Year', 'Month', 'Direction', 'HS_Code', 'Country', 
                    'Value', 'Quantity', 'Unit', 'Revenue']

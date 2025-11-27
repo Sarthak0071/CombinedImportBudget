@@ -1,7 +1,6 @@
-"""Trade module - Import/Export trade data processing."""
-
+"""Trade data processing module."""
 from .api import process_data
-from .config import TARGET_YEAR, TARGET_MONTH, NEPALI_MONTHS
+from .cleaner import clean_monthly_data
+from .config import NEPALI_MONTHS
 
-__version__ = '1.0.0'
-__all__ = ['process_data', 'TARGET_YEAR', 'TARGET_MONTH', 'NEPALI_MONTHS']
+__all__ = ['process_data', 'clean_monthly_data', 'NEPALI_MONTHS']

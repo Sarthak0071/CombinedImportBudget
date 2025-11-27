@@ -1,7 +1,6 @@
 import pandas as pd
 import logging
 
-from .config import TARGET_YEAR, TARGET_MONTH
 from .cleaner import get_iso2_code  
 from ..core.utils import clean_hs_code, create_key
 
@@ -46,7 +45,9 @@ def calculate_previous_cumulative(previous_df: pd.DataFrame,
 
 def calculate_monthly_values(current_cumulative: pd.DataFrame,
                              previous_cumulative: pd.DataFrame,
-                             trade_type: str) -> pd.DataFrame:
+                             trade_type: str,
+                             year: int,
+                             month: int) -> pd.DataFrame:
     logger.info(f"Calculating monthly {trade_type} values")
     
     current_cumulative = current_cumulative.copy()
@@ -78,8 +79,8 @@ def calculate_monthly_values(current_cumulative: pd.DataFrame,
         
         if monthly_value > 0 or monthly_quantity > 0:
             record = {
-                'Year': TARGET_YEAR,
-                'Month': TARGET_MONTH,
+                'Year': year,
+                'Month': month,
                 'Direction': 'I' if trade_type == 'import' else 'E',
                 'HS_Code': current_values.get('HS_Code') or previous_values.get('HS_Code'),
                 'Country': current_values.get('Country') or previous_values.get('Country'),
@@ -108,10 +109,12 @@ def calculate_monthly_values(current_cumulative: pd.DataFrame,
 def process_trade_type(
     current_cumulative: pd.DataFrame,
     previous_filtered: pd.DataFrame,
-    trade_type: str
+    trade_type: str,
+    year: int,
+    month: int
 ) -> pd.DataFrame:
     previous_cumulative = calculate_previous_cumulative(previous_filtered, trade_type)
-    monthly_df = calculate_monthly_values(current_cumulative, previous_cumulative, trade_type)
+    monthly_df = calculate_monthly_values(current_cumulative, previous_cumulative, trade_type, year, month)
     return monthly_df
 
 

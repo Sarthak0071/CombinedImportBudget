@@ -5,7 +5,6 @@ import logging
 from pathlib import Path
 
 from ..core.io import read_csv, save_csv
-from .config import TARGET_YEAR, PREVIOUS_MONTH
 
 logger = logging.getLogger(__name__)
 
@@ -16,14 +15,14 @@ def read_done_csv(csv_path: Path) -> pd.DataFrame:
     return df
 
 
-def filter_prev_data(done_df: pd.DataFrame) -> pd.DataFrame:
+def filter_prev_data(done_df: pd.DataFrame, year: int, previous_month: int) -> pd.DataFrame:
     filtered = done_df[
-        (done_df['Year'] == TARGET_YEAR) &
-        (done_df['Month'] <= PREVIOUS_MONTH)
+        (done_df['Year'] == year) &
+        (done_df['Month'] <= previous_month)
     ].copy()
     
     if len(filtered) == 0:
-        logger.warning(f"No data for Year={TARGET_YEAR}, Month≤{PREVIOUS_MONTH}")
+        logger.warning(f"No data for Year={year}, Month≤{previous_month}")
     else:
         logger.info(f"Filtered {len(filtered):,} records (I:{len(filtered[filtered['Direction'] == 'I']):,}, E:{len(filtered[filtered['Direction'] == 'E']):,})")
     

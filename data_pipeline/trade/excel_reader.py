@@ -14,12 +14,17 @@ from ..core.utils import (
     remove_total_rows
 )
 from .config import IMPORT_SHEET_KEYWORDS, EXPORT_SHEET_KEYWORDS
+from .header_parser import extract_header_metadata
 
 logger = logging.getLogger(__name__)
 
 
 class TradeExcelReader(BaseExcelReader):
     """Excel reader for trade data (Table 4 = Import, Table 6 = Export)."""
+    
+    def extract_metadata(self):
+        """Extract year/month metadata from Excel file headers."""
+        return extract_header_metadata(self.excel_path)
     
     def read_import_data(self) -> Optional[pd.DataFrame]:
         """Read import data from Excel file (Table 4)."""

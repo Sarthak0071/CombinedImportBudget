@@ -28,7 +28,25 @@ def process_data(xlsx_file: Union[str, Path], old_data: Union[str, Path],
     
     file_type = get_file_type(xlsx_path)
     
+    # Extract metadata from Excel file
+    metadata = None
     if file_type == 'excel':
+        from .excel_reader import TradeExcelReader
+        reader = TradeExcelReader(xlsx_path)
+        metadata = reader.extract_metadata()
+        reader.close()
+        
+        if not metadata:
+            raise ValueError(f"Could not extract year/month metadata from {xlsx_path.name}. "
+                           "Please ensure the Excel file has proper headers with fiscal year and month range.")
+        
+        year = metadata['year']
+        target_month = metadata['target_month']
+        previous_month = metadata['previous_month']
+        
+        logger.info(f"✓ Detected metadata: Year={year}, Month={target_month}, "
+                   f"Previous={previous_month} ({xlsx_path.name})")
+        
         import_cumulative, export_cumulative = read_cumulative_excel(xlsx_path)
         if import_cumulative is None and export_cumulative is None:
             raise ValueError("Failed to read import and export data")
@@ -37,6 +55,17 @@ def process_data(xlsx_file: Union[str, Path], old_data: Union[str, Path],
         cumulative_df = pd.read_csv(xlsx_path)
         if 'Direction' not in cumulative_df.columns:
             raise ValueError("CSV must have 'Direction' column")
+        
+        # For CSV, try to extract from filename
+        from .header_parser import _extract_year_from_filename
+        year = _extract_year_from_filename(xlsx_path)
+        if not year:
+            raise ValueError(f"Could not extract year from CSV filename: {xlsx_path.name}")
+        
+        # CSV files need month to be specified - use default or raise error
+        logger.warning("CSV input detected - assuming current month for processing")
+        target_month = 6  # Default fallback - ideally this should be a parameter
+        previous_month = 5
         
         import_cumulative = cumulative_df[cumulative_df['Direction'] == 'I'].copy() \
             if 'I' in cumulative_df['Direction'].values else None
@@ -47,15 +76,15 @@ def process_data(xlsx_file: Union[str, Path], old_data: Union[str, Path],
             raise ValueError("No data with Direction 'I' or 'E'")
     
     done_df = read_done_csv(old_data_path)
-    previous_filtered = filter_prev_data(done_df)
+    previous_filtered = filter_prev_data(done_df, year, previous_month)
     
     import_monthly = pd.DataFrame()
     if import_cumulative is not None:
-        import_monthly = process_trade_type(import_cumulative, previous_filtered, 'import')
+        import_monthly = process_trade_type(import_cumulative, previous_filtered, 'import', year, target_month)
     
     export_monthly = pd.DataFrame()
     if export_cumulative is not None:
-        export_monthly = process_trade_type(export_cumulative, previous_filtered, 'export')
+        export_monthly = process_trade_type(export_cumulative, previous_filtered, 'export', year, target_month)
     
     monthly_df = combine_import_export(import_monthly, export_monthly)
     monthly_df = clean_monthly_data(monthly_df)
