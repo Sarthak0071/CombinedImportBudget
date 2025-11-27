@@ -16,7 +16,8 @@ logger = get_logger(__name__)
 
 
 def process_data(xlsx_file: Union[str, Path], old_data: Union[str, Path], 
-                 output_name: str = 'updateddone.csv') -> pd.DataFrame:
+                 output_name: str = 'updateddone.csv',
+                 replace_existing: bool = True) -> pd.DataFrame:
     
     xlsx_path = Path(xlsx_file)
     old_data_path = Path(old_data)
@@ -93,7 +94,7 @@ def process_data(xlsx_file: Union[str, Path], old_data: Union[str, Path],
     save_csv(monthly_df, monthly_only_path, "Monthly data")
     
     create_backup(old_data_path)
-    final_path = save_updated_csv(old_data_path, monthly_df, output_name)
+    final_path = save_updated_csv(old_data_path, monthly_df, output_name, replace_existing)
     
     return pd.read_csv(final_path)
 
