@@ -1,0 +1,122 @@
+"""Configuration for darta data processing."""
+
+NEPALI_TO_ENGLISH_DIGITS = {
+    '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
+    '५': '5', '६': '6', '७': '7', '८': '8', '९': '9'
+}
+
+PROVINCE_MAPPING = {
+    'Bagmati Province': '3',
+    'Bāgmatī': '3',
+    'Gandaki Province': '4',
+    'Karnali Province': '6',
+    'Karnālī': '6',
+    'Lumbini pradesh': '5',
+    'Lumbinī pradesh': '5',
+    'Sudurpashchim Province': '7',
+    'Sudurpaścim Province': '7',
+    'Koshi Province': '1',
+    'Koṣī Province': '1',
+    'Madesh Province': '2',
+    'Madhesh Province': '2',
+    'Mādhes': '2'
+}
+
+DISTRICT_MAPPING = {
+    'Kathmandu': '27',
+    'Kāṭhmāṇḍau': '27',
+    'Kanchanpur': '75',
+    'Kāñcanpur': '75',
+    'Bhaktapur': '26',
+    'Lalitpur': '25',
+    'Parbat': '43',
+    'Baglung': '42',
+    'Bāgluṅ': '42',
+    'Banke': '57',
+    'Dailekh': '60',
+    'Surkhet': '59',
+    'Kavrepalanchowk': '28',
+    'Kavrepālāñcok': '28',
+    'Kāvre': '28',
+    'Parsa': '32',
+    'Rupandehi': '33',
+    'Rūpandehi': '33',
+    'Salyan': '61',
+    'Kaski': '40',
+    'Kāskī': '40',
+    'Bhojpur': '9',
+    'Makawanpur': '29',
+    'Mākhwānpur': '29',
+    'Achham': '73',
+    'Morang': '15',
+    'Morāṅ': '15',
+    'Kalikot': '65',
+    'Kālikot': '65',
+    'Jumla': '62',
+    'Bajura': '71',
+    'Bājurā': '71',
+    'Chitwan': '30',
+    'Chitwān': '30',
+    'Sindhupalchok': '22',
+    'Sindupalcok': '22',
+    'Tanahun': '41',
+    'Tanāhũ': '41',
+    'Jhapa': '14',
+    'Jāpā': '14',
+    'Palpa': '37',
+    'Pālpā': '37',
+    'Doti': '74',
+    'Ḍoṭī': '74',
+    'Jajarkot': '64',
+    'Jājarkoṭ': '64',
+    'Bara': '31',
+    'Barā': '31',
+    'Dang': '56',
+    'Dāṅ': '56',
+    'Mahottari': '19',
+    'Mahottarī':  '19',
+    'Kailali': '76',
+    'Kailaāli': '76',
+    'Sankhuwasava': '6',
+    'Sāṅkhuwā': '6',
+    'Bardiya': '55',
+    'Barḍiyā': '55',
+    'parasi(Bardaghat Sus': '38',
+    'arasi(Bardaghat Sust': '38',
+    'Parasi': '38',
+    'Rautahat': '35',
+    'Rautāhaṭ': '35',
+    'Kapilvastu': '34',
+    'Kapilbastu': '34',
+    'Sindhuli': '21',
+    'Sindhulī': '21',
+    'Ramechhap': '20',
+    'Rāmechāp': '20',
+    'Mugu': '66',
+    'Saptari': '17',
+    'Saptarī': '17',
+    'Rukumpashim': '45',
+    'Rukum West': '45'
+}
+
+COLUMN_MAPPING = {
+    'reg_no': 'reg_no',
+    'nregdate': 'nregdate',
+    'medianame': 'medianame',
+    'domainname': 'domainname',
+    'province': 'province',
+    'district': 'district',
+    'director_name': 'director_name',
+    'director_phone': 'director_phone',
+    'editor_name': 'editor_name',
+    'editor_phone': 'editor_phone',
+    'email': 'email'
+}
+
+EXPECTED_COLUMNS = [
+    'reg_no', 'nregdate_year', 'nregdate_month', 'nregdate_day',
+    'medianame', 'domainname', 'province_code', 'district_code',
+    'director_name', 'director_phone', 'editor_name', 'editor_phone', 'email'
+]
+
+REG_NUMBER_SEPARATORS = ['/', '-', '_']

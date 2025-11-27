@@ -2,11 +2,12 @@
 Unified Data Processing Pipeline
 =================================
 
-A consolidated Python package for processing Nepal trade data and budget data.
+A consolidated Python package for processing Nepal trade data, budget data, and darta (registration) data.
 
 Modules:
 - trade: Import/Export trade data processing (monthly calculations)
 - budget: Budget data extraction and processing
+- darta: PDF darta (registration) data processing
 - core: Shared utilities and I/O operations
 """
 
@@ -32,7 +33,8 @@ setup(
         "pandas>=1.3.0",
         "openpyxl>=3.0.0",
         "xlrd>=2.0.0",
-        "pycountry>=20.7.0"
+        "pycountry>=20.7.0",
+        "pdfplumber>=0.10.0"
     ],
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -47,6 +49,7 @@ setup(
         'console_scripts': [
             'process-trade=data_pipeline.trade.api:main',
             'process-budget=data_pipeline.budget.api:main',
+            'process-darta=data_pipeline.darta.api:main',
         ],
     },
 )
