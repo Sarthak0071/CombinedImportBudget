@@ -2,7 +2,7 @@ import pandas as pd
 import logging
 
 from .cleaner import get_iso2_code  
-from ..core.utils import clean_hs_code, create_key
+from ..core.utils import pipe, clean_hs_codes_fn, strip_strings, add_composite_key, apply_to_column
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +32,13 @@ def calculate_previous_cumulative(previous_df: pd.DataFrame,
     
     logger.info(f"Calculating {trade_type} cumulative from {len(df):,} records")
     
-    df = clean_hs_code(df)
-    df['Country'] = df['Country'].astype(str).str.strip()
-    df = create_key(df, 'HS_Code', 'Country')
+    # Use functional composition
+    df = pipe(
+        df,
+        clean_hs_codes_fn,
+        strip_strings('Country'),
+        add_composite_key('HS_Code', 'Country')
+    )
     
     agg_dict = get_trade_agg_dict(trade_type, 'Revenue' in df.columns)
     cumulative = df.groupby('_key', as_index=False).agg(agg_dict)
@@ -50,10 +54,13 @@ def calculate_monthly_values(current_cumulative: pd.DataFrame,
                              month: int) -> pd.DataFrame:
     logger.info(f"Calculating monthly {trade_type} values")
     
-    current_cumulative = current_cumulative.copy()
-    current_cumulative = clean_hs_code(current_cumulative)
-    current_cumulative['Country'] = current_cumulative['Country'].apply(get_iso2_code)
-    current_cumulative = create_key(current_cumulative, 'HS_Code', 'Country')
+    # Use functional composition for data preparation
+    current_cumulative = pipe(
+        current_cumulative.copy(),
+        clean_hs_codes_fn,
+        apply_to_column('Country', get_iso2_code),
+        add_composite_key('HS_Code', 'Country')
+    )
     
     agg_dict = get_trade_agg_dict(trade_type, 'Revenue' in current_cumulative.columns)
     current_aggregated = current_cumulative.groupby('_key', as_index=False).agg(agg_dict)

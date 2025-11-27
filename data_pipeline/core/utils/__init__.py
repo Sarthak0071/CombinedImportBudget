@@ -8,14 +8,32 @@ from .data_utils import (
     standardize_column_names,
     find_data_start_row,
     find_target_sheet,
-    get_file_type,
-    create_key,
-    clean_hs_code
+    get_file_type
 )
 
 from .column_matcher import find_column
 
 from .logging_config import setup_logging, get_logger
+
+from .functional_utils import (
+    pipe,
+    compose,
+    with_column,
+    create_filter,
+    combine_filters,
+    filter_by_column
+)
+
+from .dataframe_transforms import (
+    to_numeric_safe,
+    clean_numerics,
+    clean_hs_codes_fn,
+    strip_strings,
+    add_composite_key,
+    remove_nulls,
+    remove_rows_containing,
+    apply_to_column
+)
 
 __all__ = [
     'extract_fiscal_year',
@@ -27,8 +45,20 @@ __all__ = [
     'find_target_sheet',
     'find_column',
     'get_file_type',
-    'create_key',
-    'clean_hs_code',
     'setup_logging',
-    'get_logger'
+    'get_logger',
+    'pipe',
+    'compose',
+    'with_column',
+    'create_filter',
+    'combine_filters',
+    'filter_by_column',
+    'to_numeric_safe',
+    'clean_numerics',
+    'clean_hs_codes_fn',
+    'strip_strings',
+    'add_composite_key',
+    'remove_nulls',
+    'remove_rows_containing',
+    'apply_to_column'
 ]
