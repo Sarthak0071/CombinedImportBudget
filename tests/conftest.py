@@ -2,6 +2,7 @@
 
 import pytest
 from pathlib import Path
+import pandas as pd
 
 
 @pytest.fixture(scope="session")
@@ -32,3 +33,20 @@ def done_file(data_dir):
 def darta_file(data_dir):
     """Return path to darta PDF file."""
     return str(data_dir / 'darta.pdf')
+
+
+@pytest.fixture
+def sample_trade_df():
+    """Sample trade dataframe."""
+    return pd.DataFrame({
+        'Year': [2081, 2081],
+        'Month': [4, 5],
+        'Direction': ['I', 'I'],
+        'HS_Code': ['1001', '1002'],
+        'Country': ['IN', 'CN'],
+        'Value': [100.0, 200.0],
+        'Quantity': [10.0, 20.0],
+        'Unit': ['kg', 'kg'],
+        'Revenue': [50.0, 100.0]
+    })
+
