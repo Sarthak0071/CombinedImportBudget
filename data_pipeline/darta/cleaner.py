@@ -30,7 +30,7 @@ def clean_registration_number(reg_no: str) -> str:
         008/073-74 -> 008
         780\074 -> 780
         894-075 -> 894
-        ११०११९-०६९-०७० -> 110119 (also converts Nepali)
+        ११०११९-०६९-०७२ -> 110119 (also converts Nepali)
         1,2,3,4 -> 1,2,3,4 (keeps comma-separated)
     """
     if pd.isna(reg_no):
@@ -110,10 +110,10 @@ def clean_phone_number(phone: str) -> str:
     Clean phone numbers comprehensively.
     
     Rules:
-    - Extract first valid 10-digit starting with 9 or 0
-    - Split on /, -, comma
+    - Keep landline numbers (01-xxx) as-is with hyphen
+    - Extract first valid 10-digit mobile starting with 9
+    - Split on /, comma for multiple numbers
     - Add 98 prefix to 8-digit mobile numbers
-    - Keep landline numbers (01-xxx) as-is
     """
     if pd.isna(phone):
         return phone
@@ -121,36 +121,41 @@ def clean_phone_number(phone: str) -> str:
     phone_str = str(phone).strip()
     phone_str = convert_nepali_to_english(phone_str)
     
-    separators = ['/', '-', ',']
+    # Handle separators (/, ,) - process these first
+    separators = ['/', ',']
     for sep in separators:
         if sep in phone_str:
             parts = [p.strip() for p in phone_str.split(sep)]
             for part in parts:
+                # Check if this part is a landline
+                if part.startswith('01') and '-' in part:
+                    return part
+                # Check for valid mobile number
                 digits = ''.join(c for c in part if c.isdigit())
-                if len(digits) == 10 and digits[0] in ['9', '0']:
+                if len(digits) == 10 and digits[0] == '9':
                     return digits
-                elif len(digits) == 8:
-                    if digits[:2] != '01':
-                        return '98' + digits
+                elif len(digits) == 8 and not part.startswith('01'):
+                    return '98' + digits
+            # If no valid number found, use first part
             phone_str = parts[0] if parts else phone_str
     
-    phone_clean = ''.join(c for c in phone_str if c.isdigit() or c == '-')
+    # Check for single landline (no separators)
+    if phone_str.startswith('01') and '-' in phone_str:
+        return phone_str
     
-    if phone_clean.startswith('01-'):
-        return phone_clean
+    # Process single number without separators
+    digits_only = ''.join(c for c in phone_str if c.isdigit())
     
-    digits_only = ''.join(c for c in phone_clean if c.isdigit())
-    
-    if len(digits_only) == 10 and digits_only[0] in ['9', '0']:
+    # 10-digit mobile starting with 9
+    if len(digits_only) == 10 and digits_only[0] == '9':
         return digits_only
     
+    # 8-digit mobile (add 98 prefix)
     if len(digits_only) == 8:
         return '98' + digits_only
     
-    if len(digits_only) == 10:
-        return digits_only
-    
-    return phone_clean
+    # Return as-is if no valid pattern matched
+    return phone_str
 
 
 def apply_province_code(df: pd.DataFrame) -> pd.DataFrame:
