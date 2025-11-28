@@ -1,6 +1,6 @@
-from difflib import SequenceMatcher
-from typing import Optional, List, Dict
+from typing import Optional
 import pandas as pd
+from .data_utils import fuzzy_string_match
 
 
 def find_column(df: pd.DataFrame, target: str, threshold: float = 0.85) -> Optional[str]:
@@ -9,7 +9,7 @@ def find_column(df: pd.DataFrame, target: str, threshold: float = 0.85) -> Optio
     
     def similarity_score(col):
         col_clean = str(col).lower().replace('_', '').replace(' ', '').replace('-', '')
-        return SequenceMatcher(None, target_clean, col_clean).ratio()
+        return fuzzy_string_match(target_clean, col_clean)
     
     if not df.columns.empty:
         best_match = max(df.columns, key=similarity_score)

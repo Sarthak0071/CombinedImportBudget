@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List
 
 from ..core.io import BaseExcelReader
-from ..core.utils import extract_fiscal_year, clean_year_value, standardize_column_names
+from ..core.utils import extract_fiscal_year, clean_year_value, standardize_column_names, fuzzy_string_match
 from .config import STANDARD_COLUMNS, COLUMN_MAPPING, COLUMNS_TO_REMOVE, SHEET_PATTERNS
 
 logger = logging.getLogger(__name__)
@@ -14,8 +14,6 @@ logger = logging.getLogger(__name__)
 
 def get_government_level(sheet_name: str) -> str:
     """Determine government level from sheet name using fuzzy matching."""
-    from difflib import SequenceMatcher
-    
     sheet_clean = sheet_name.lower().strip()
     
     keywords = {
@@ -31,7 +29,7 @@ def get_government_level(sheet_name: str) -> str:
         for term in terms:
             if term in sheet_clean:
                 return level
-            ratio = SequenceMatcher(None, term, sheet_clean).ratio()
+            ratio = fuzzy_string_match(term, sheet_clean)
             if ratio > best_ratio:
                 best_ratio = ratio
                 best_match = level

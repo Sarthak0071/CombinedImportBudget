@@ -10,9 +10,9 @@ from ..core.utils import (
     find_data_start_row,
     find_target_sheet,
     standardize_column_names,
-    clean_numeric_column,
     remove_total_rows
 )
+from ..core.utils.dataframe_transforms import to_numeric_safe
 from .config import IMPORT_SHEET_KEYWORDS, EXPORT_SHEET_KEYWORDS
 from .header_parser import extract_header_metadata
 
@@ -104,7 +104,7 @@ class TradeExcelReader(BaseExcelReader):
             
             for col in ['Value', 'Quantity', 'Revenue']:
                 if col in df.columns:
-                    df = clean_numeric_column(df, col)
+                    df[col] = to_numeric_safe(df[col])
             
             df['HS_Code'] = df['HS_Code'].astype(str).str.strip()
             df['Country'] = df['Country'].astype(str).str.strip().replace(

@@ -29,14 +29,6 @@ def clean_year_value(year_val) -> str:
     return year_str
 
 
-def clean_numeric_column(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
-    """Convert column to numeric, deprecated."""
-    df = df.copy()
-    if col_name in df.columns:
-        df[col_name] = pd.to_numeric(df[col_name], errors='coerce').fillna(0)
-    return df
-
-
 def remove_total_rows(df: pd.DataFrame, key_column: str = 'HS_Code') -> pd.DataFrame:
     """Remove rows containing 'total' in specified column."""
     df = df.copy()
