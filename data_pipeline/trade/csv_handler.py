@@ -18,16 +18,44 @@ def read_done_csv(csv_path: Path) -> pd.DataFrame:
 
 
 def filter_prev_data(done_df: pd.DataFrame, year: int, previous_month: int) -> pd.DataFrame:
-    """Filter previous data using functional composition."""
+    """Filter previous data using functional composition (fiscal year aware)."""
     year_filter = create_filter('Year', '==', year)
-    month_filter = create_filter('Month', '<=', previous_month)
     
-    combined_filter = combine_filters(year_filter, month_filter)
+    if previous_month >= 4:
+        # Case 1: Mid-year months (4-12)
+        # Fiscal year starts at month 4, so get months from 4 to previous_month
+        fiscal_start_filter = create_filter('Month', '>=', 4)
+        month_filter = create_filter('Month', '<=', previous_month)
+        combined_filter = combine_filters(year_filter, fiscal_start_filter, month_filter)
+        
+    else:
+        # Case 2: End-of-year months (1-3)
+        # Get months 4-12 (fiscal year start) AND months 1 to previous_month
+        # Example: For month 2 (Jestha), previous_month=1, get [4-12] + [1]
+        # This requires OR logic: (Month >= 4) OR (Month <= previous_month)
+        
+        # Filter for months >= 4
+        fiscal_start_subset = done_df[(done_df['Year'] == year) & (done_df['Month'] >= 4)]
+        # Filter for months <= previous_month
+        early_months_subset = done_df[(done_df['Year'] == year) & (done_df['Month'] <= previous_month)]
+        # Combine with OR (union)
+        filtered = pd.concat([fiscal_start_subset, early_months_subset]).drop_duplicates()
+        
+        if len(filtered) == 0:
+            logger.warning(f"No data for Year={year}, Months≥4 or ≤{previous_month}")
+        else:
+            months_str = sorted(filtered['Month'].unique())
+            logger.info(f"Filtered {len(filtered):,} records for months {months_str} "
+                       f"(I:{len(filtered[filtered['Direction'] == 'I']):,}, "
+                       f"E:{len(filtered[filtered['Direction'] == 'E']):,})")
+        
+        return filtered
+    
+    # Apply filter for case 1
     filtered = combined_filter(done_df)
     
     if len(filtered) == 0:
-        logger.warning(f"No data for Year={year}, Month≤{previous_month}"
-)
+        logger.warning(f"No data for Year={year}, Month≥4 and ≤{previous_month}")
     else:
         logger.info(f"Filtered {len(filtered):,} records (I:{len(filtered[filtered['Direction'] == 'I']):,}, "
                     f"E:{len(filtered[filtered['Direction'] == 'E']):,})")
