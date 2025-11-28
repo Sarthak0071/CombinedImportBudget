@@ -90,3 +90,20 @@ def get_file_type(file_path: Path) -> str:
     elif ext == '.csv':
         return 'csv'
     raise ValueError(f"Unsupported file type: {ext}")
+
+
+def fuzzy_string_match(text1: str, text2: str) -> float:
+    """Calculate similarity ratio between two strings."""
+    from difflib import SequenceMatcher
+    return SequenceMatcher(None, text1.lower(), text2.lower()).ratio()
+
+
+def convert_nepali_to_english(text: str, digit_map: dict) -> str:
+    """Convert Nepali numerals to English using provided mapping."""
+    if pd.isna(text):
+        return text
+    
+    text_str = str(text)
+    for nepali, english in digit_map.items():
+        text_str = text_str.replace(nepali, english)
+    return text_str

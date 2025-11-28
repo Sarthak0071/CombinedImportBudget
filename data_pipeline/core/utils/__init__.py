@@ -1,4 +1,4 @@
-"""Core utilities module."""
+﻿"""Core utilities module."""
 
 from .data_utils import (
     extract_fiscal_year,
@@ -8,11 +8,12 @@ from .data_utils import (
     standardize_column_names,
     find_data_start_row,
     find_target_sheet,
-    get_file_type
+    get_file_type,
+    fuzzy_string_match,
+    convert_nepali_to_english,
 )
 
 from .column_matcher import find_column
-
 from .logging_config import setup_logging, get_logger
 
 from .functional_utils import (
@@ -45,6 +46,8 @@ __all__ = [
     'find_target_sheet',
     'find_column',
     'get_file_type',
+    'fuzzy_string_match',
+    'convert_nepali_to_english',
     'setup_logging',
     'get_logger',
     'pipe',

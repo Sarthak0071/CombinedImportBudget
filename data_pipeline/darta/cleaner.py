@@ -4,22 +4,16 @@ import pandas as pd
 import re
 import logging
 from typing import Optional
-from difflib import SequenceMatcher
 
 from .config import NEPALI_TO_ENGLISH_DIGITS, REG_NUMBER_SEPARATORS, PROVINCE_MAPPING, DISTRICT_MAPPING
+from ..core.utils import convert_nepali_to_english as _convert_nepali, fuzzy_string_match
 
 logger = logging.getLogger(__name__)
 
 
 def convert_nepali_to_english(text: str) -> str:
     """Convert Nepali numerals to English numerals."""
-    if pd.isna(text):
-        return text
-    
-    text_str = str(text)
-    for nepali, english in NEPALI_TO_ENGLISH_DIGITS.items():
-        text_str = text_str.replace(nepali, english)
-    return text_str
+    return _convert_nepali(text, NEPALI_TO_ENGLISH_DIGITS)
 
 
 def clean_registration_number(reg_no: str) -> str:
@@ -93,7 +87,7 @@ def fuzzy_find_code(name: str, mapping: dict, threshold: float = 0.75) -> Option
     best_ratio = threshold
     
     for key, code in mapping.items():
-        ratio = SequenceMatcher(None, name_clean.lower(), key.lower()).ratio()
+        ratio = fuzzy_string_match(name_clean, key)
         if ratio > best_ratio:
             best_ratio = ratio
             best_match = code
