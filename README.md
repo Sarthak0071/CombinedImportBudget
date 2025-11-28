@@ -43,6 +43,15 @@ result = process_data(
 # Outputs: month.csv, updateddone.csv
 ```
 
+### Darta Processing
+
+```python
+from data_pipeline.darta import process_data
+
+# User provides ANY darta PDF
+result = process_data('data/darta.pdf', 'data/clean_data.csv')
+```
+
 ## Requirements
 
 - Python >= 3.7
