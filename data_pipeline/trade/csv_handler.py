@@ -73,17 +73,24 @@ def save_updated_csv(
     done_df = read_csv(original_path)
     
     if replace_existing and not monthly_df.empty:
-        if 'Year' in monthly_df.columns and 'Month' in monthly_df.columns:
-            new_combinations = monthly_df[['Year', 'Month']].drop_duplicates()
+        if all(col in monthly_df.columns for col in ['Year', 'Month', 'Direction']):
+            new_combinations = monthly_df[['Year', 'Month', 'Direction']].drop_duplicates()
             
             for _, row in new_combinations.iterrows():
-                year, month = row['Year'], row['Month']
-                mask = (done_df['Year'] == year) & (done_df['Month'] == month)
+                year = row['Year']
+                month = row['Month']
+                direction = row['Direction']
+                
+                mask = ((done_df['Year'] == year) & 
+                        (done_df['Month'] == month) & 
+                        (done_df['Direction'] == direction))
+                
                 removed_count = mask.sum()
                 done_df = done_df[~mask]
                 
                 if removed_count > 0:
-                    logger.info(f"Removed {removed_count:,} existing records for Year={year}, Month={month}")
+                    dir_name = 'Import' if direction == 'I' else 'Export'
+                    logger.info(f"Removed {removed_count:,} {dir_name} records for Year={year}, Month={month}")
     
     updated_df = pd.concat([done_df, monthly_df], ignore_index=True)
     

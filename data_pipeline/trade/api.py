@@ -45,7 +45,7 @@ def process_data(xlsx_file: Union[str, Path], old_data: Union[str, Path],
         target_month = metadata['target_month']
         previous_month = metadata['previous_month']
         
-        logger.info(f"✓ Detected metadata: Year={year}, Month={target_month}, "
+        logger.info(f"Detected metadata: Year={year}, Month={target_month}, "
                    f"Previous={previous_month} ({xlsx_path.name})")
         
         import_cumulative, export_cumulative = read_cumulative_excel(xlsx_path)
